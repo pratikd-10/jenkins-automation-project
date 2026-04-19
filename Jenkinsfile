@@ -25,11 +25,11 @@ pipeline {
         }
 
         stage('Dependency Security Scan (Snyk)') {
-            steps {
-                // We use the token to authorize the headless scan
-                bat "snyk test --token=${SNYK_TOKEN}"
-            }
-        }
+    steps {
+        // Use the full path to the .exe so there is no confusion
+        bat "C:\\Windows\\System32\\snyk.exe test --token=${SNYK_TOKEN}"
+    }
+}
 
         stage('Build Docker Image') {
             steps {
