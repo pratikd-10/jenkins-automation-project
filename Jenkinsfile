@@ -27,7 +27,7 @@ pipeline {
         stage('Dependency Security Scan (Snyk)') {
     steps {
         // Use the full path to the .exe so there is no confusion
-        bat "C:\\Windows\\System32\\snyk.exe test --token=${SNYK_TOKEN}"
+        bat "C:\\Tools\\snyk.exe test --token=${SNYK_TOKEN}"
     }
 }
 
