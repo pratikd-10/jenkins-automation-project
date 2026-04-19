@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    // We removed the environment block for KUBECONFIG because we manually 
+    // placed the config in the SystemProfile folder earlier. 
+    // Jenkins will now find it automatically!
+
     stages {
         stage('Checkout') {
             steps {
@@ -11,23 +15,23 @@ pipeline {
 
         stage('Build Image') {
             steps {
-                // Building the image locally on your Docker Desktop
                 bat 'docker build -t my-app:latest .'
             }
         }
 
-        stage('Deploy to Laptop') {
+        stage('Sync to Kind') {
             steps {
-                // 1. Remove the old container if it exists (prevents 'name already in use' error)
-                // The '|| ver > nul' ensures the pipeline doesn't fail if the container isn't found
-                bat 'docker rm -f my-app || ver > nul'
+                bat 'kind load docker-image my-app:latest --name pratik-cluster'
+            }
+        }
 
-                // 2. Start the container on your laptop's port 3000
-                // -d runs it in the background
-                // -p 3000:3000 maps your laptop port to the container port
-                bat 'docker run -d -p 3000:3000 --name my-app my-app:latest'
-                
-                echo 'Application is live! Visit http://localhost:3000'
+        stage('Deploy to K8s') {
+            steps {
+                // 1. Apply the manifests
+                bat 'kubectl apply -f k8s/'
+
+                // 2. FORCE the pods to restart even if the image name didn't change
+                bat 'kubectl rollout restart deployment my-app'
             }
         }
     }
