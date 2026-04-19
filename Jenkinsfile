@@ -37,12 +37,13 @@ pipeline {
         }
 
         stage('Container Image Scan (Trivy)') {
-            steps {
-                // Running Trivy via Docker so you don't need to install anything extra
-                // It scans for HIGH and CRITICAL vulnerabilities
-                bat "docker run --rm -v C:\\trivy_cache:/root/.cache/ aquasec/trivy image --severity HIGH,CRITICAL my-app:latest"
-            }
+    steps {
+        // Increase the timeout for this specific block
+        timeout(time: 10, unit: 'MINUTES') {
+            bat "docker run --rm -v C:\\trivy_cache:/root/.cache/ aquasec/trivy image --severity HIGH,CRITICAL my-app:latest"
         }
+    }
+}
 
         stage('Deploy to Kubernetes') {
             steps {
