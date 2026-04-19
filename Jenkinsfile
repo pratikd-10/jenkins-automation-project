@@ -14,17 +14,13 @@ pipeline {
         }
         
         stage('Build Image') {
-            steps {
-                // Changed 'sh' to 'bat' because Jenkins is on Windows
-                // Using 'latest' for the kind load step consistency
-                bat 'docker build -t pratik/my-app:latest .'
-            }
-        }
-
-       stage('Sync to Kind') {
     steps {
-        // We add the --name flag to match the cluster we just created
-        bat 'kind load docker-image pratik/my-app:latest --name pratik-cluster'
+        bat 'docker build -t my-app:latest .'
+    }
+}
+stage('Sync to Kind') {
+    steps {
+        bat 'kind load docker-image my-app:latest --name pratik-cluster'
     }
 }
 
