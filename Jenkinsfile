@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+
     // We removed the environment block for KUBECONFIG because we manually 
     // placed the config in the SystemProfile folder earlier. 
     // Jenkins will now find it automatically!
@@ -12,22 +12,26 @@ pipeline {
                 checkout scm
             }
         }
-        
+
         stage('Build Image') {
-    steps {
-        bat 'docker build -t my-app:latest .'
-    }
-}
-stage('Sync to Kind') {
-    steps {
-        bat 'kind load docker-image my-app:latest --name pratik-cluster'
-    }
-}
+            steps {
+                bat 'docker build -t my-app:latest .'
+            }
+        }
+
+        stage('Sync to Kind') {
+            steps {
+                bat 'kind load docker-image my-app:latest --name pratik-cluster'
+            }
+        }
 
         stage('Deploy to K8s') {
             steps {
-                // Applying your k8s folder manifests
-                bat 'kubectl apply -f k8s/ --validate=false'
+                // 1. Apply the manifests
+                bat 'kubectl apply -f k8s/'
+
+                // 2. FORCE the pods to restart even if the image name didn't change
+                bat 'kubectl rollout restart deployment my-app'
             }
         }
     }
