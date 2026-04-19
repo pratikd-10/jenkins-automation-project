@@ -21,13 +21,12 @@ pipeline {
             }
         }
 
-        stage('Sync to Kind') {
-            steps {
-                // NEW STEP: This moves the image from your Windows Docker engine 
-                // into the internal storage of the 'kind' cluster nodes.
-                bat 'kind load docker-image pratik/my-app:latest'
-            }
-        }
+       stage('Sync to Kind') {
+    steps {
+        // We add the --name flag to match the cluster we just created
+        bat 'kind load docker-image pratik/my-app:latest --name pratik-cluster'
+    }
+}
 
         stage('Deploy to K8s') {
             steps {
