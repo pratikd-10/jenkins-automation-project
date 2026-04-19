@@ -40,7 +40,7 @@ pipeline {
     steps {
         // Increase the timeout for this specific block
         timeout(time: 10, unit: 'MINUTES') {
-            bat "docker run --rm -v C:\\trivy_cache:/root/.cache/ aquasec/trivy image --severity HIGH,CRITICAL my-app:latest"
+            'docker run --rm -v //./pipe/docker_engine://./pipe/docker_engine -v C:\trivy_cache:/root/.cache/ aquasec/trivy image --severity HIGH,CRITICAL my-app:latest'
         }
     }
 }
