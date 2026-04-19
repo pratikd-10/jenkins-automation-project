@@ -38,7 +38,10 @@ pipeline {
 
         stage('Container Image Scan (Trivy)') {
     steps {
-        bat "trivy image --severity HIGH,CRITICAL my-app:latest"
+        // Increase the timeout for this specific block
+        timeout(time: 10, unit: 'MINUTES') {
+            bat "docker run --rm -v C:\\trivy_cache:/root/.cache/ aquasec/trivy image --severity HIGH,CRITICAL my-app:latest"
+        }
     }
 }
         stage('Deploy to Kubernetes') {
