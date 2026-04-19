@@ -3,10 +3,12 @@ kind: Service
 metadata:
   name: my-app-service
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: my-app
   ports:
     - port: 80
       targetPort: 3000
       protocol: TCP
+      # This fixes the port so you can access it at http://localhost:30001
+      nodePort: 30001
