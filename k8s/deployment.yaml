@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: my-app
-        image: pratikd10/my-app:v1
+        image: pratikd10/my-app:latest
         imagePullPolicy: Never
         ports:
         - containerPort: 3000
