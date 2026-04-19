@@ -26,11 +26,7 @@ pipeline {
 
         stage('Dependency Security Scan (Snyk)') {
     steps {
-        // This command lists everything in C:\tools so we can see the real filename
-        bat "dir C:\\tools"
-        
-        // Try running it without the .exe extension just in case
-        bat "C:\\tools\\snyk test --token=${SNYK_TOKEN}"
+        bat "C:\\tools\\snyk test --token=${SNYK_TOKEN} --all-projects"
     }
 }
 
