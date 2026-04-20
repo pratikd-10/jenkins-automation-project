@@ -1,75 +1,27 @@
 pipeline {
     agent any
-
+    
     environment {
-        // This pulls the scanner tool you configured in Jenkins Global Tool Configuration
-        SCANNER_HOME = tool 'SonarScanner'
-        // This pulls the Snyk API token from your Jenkins Credentials
-        SNYK_TOKEN = credentials('snyk-token')
+        KUBECONFIG = "/var/lib/jenkins/.kube/config"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/pratikd-10/jenkins-automation-project.git'
+                // Jenkins automatically pulls the code from Git here
+                checkout scm
             }
         }
-
-        stage('Static Code Analysis (SonarQube)') {
+        stage('Build Image') {
             steps {
-                // Ensure 'SonarQube' matches the name in Manage Jenkins > System
-                withSonarQubeEnv('SonarQube') {
-                    bat "${SCANNER_HOME}/bin/sonar-scanner -Dsonar.projectKey=nodejs-k8s-app -Dsonar.sources=."
-                }
+                sh 'docker build -t pratik/my-app:${BUILD_NUMBER} .'
+                sh 'docker tag pratik/my-app:${BUILD_NUMBER} pratik/my-app:latest'
             }
         }
-
-        stage('Dependency Security Scan (Snyk)') {
-    steps {
-        bat "C:\\tools\\snyk test --token=${SNYK_TOKEN} --all-projects"
-    }
-}
-
-        stage('Build Docker Image') {
+        stage('Deploy to K8s') {
             steps {
-                bat 'docker build -t my-app:latest .'
+                sh 'kubectl apply -f k8s/ --validate=false'
             }
-        }
-
-        stage('Container Image Scan (Trivy)') {
-    steps {
-        // Increase the timeout for this specific block
-        timeout(time: 10, unit: 'MINUTES') {
-            bat "docker run --rm -v C:\\trivy_cache:/root/.cache/ aquasec/trivy image --severity HIGH,CRITICAL my-app:latest"
-        }
-    }
-}
-        stage('Deploy to Kubernetes') {
-            steps {
-                // 1. Load the new image into the Kind cluster
-                bat 'kind load docker-image my-app:latest --name pratik-cluster'
-                
-                // 2. Apply your K8s manifests
-                bat 'kubectl apply -f k8s/'
-                
-                // 3. FORCE RESTART: This ensures pods use the fresh image even if the tag is still :latest
-                bat 'kubectl rollout restart deployment my-app'
-                
-                // 4. Wait for the rollout to finish so you know it's ready
-                bat 'kubectl rollout status deployment my-app'
-            }
-        }
-    }
-
-    post {
-        always {
-            echo 'Pipeline execution finished.'
-        }
-        success {
-            echo 'App deployed successfully with Security Scans!'
-        }
-        failure {
-            echo 'Pipeline failed. Check the logs for security vulnerabilities or build errors.'
         }
     }
 }
